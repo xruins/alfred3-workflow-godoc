@@ -2,6 +2,7 @@ package godoc
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -10,37 +11,50 @@ import (
 
 const goDocUrl = "https://godoc.org"
 
+// Result represent searching results of godoc.org
 type Result struct {
 	Path     string
 	Synopsis string
 }
 
-// Search searches godoc.org with given query and returns found URLs
-func Search(query string) ([]*Result, error) {
-
+// request requests godoc.org with given query
+func request(query string) (*http.Response, error) {
 	url := fmt.Sprintf("%s?q=%s", goDocUrl, url.QueryEscape(query))
-	res, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
+	return http.Get(url)
+}
 
-	doc, err := htmlquery.Parse(res.Body)
+// parseHTML parses given HTML, then returns a slice of *Result
+func parseHTML(r io.Reader) ([]*Result, error) {
+	doc, err := htmlquery.Parse(r)
 	if err != nil {
 		return nil, err
 	}
 
 	var ret []*Result
 	// get synopsis
-	synopses := htmlquery.Find(doc, "/html/body/div/table/tbody/tr/td.synopsys")
+	parentNodes := htmlquery.Find(doc, "/html/body/div/table/tbody/tr/td")
 
-	for i, n := range htmlquery.Find(doc, "/html/body/div/table/tbody/tr/td/a") {
+	for _, p := range parentNodes {
+		pathNode := htmlquery.Find(p, "/td/a")[0]
+		synopsysNode := htmlquery.Find(p, "/td[@class='synopsis']")[0]
 		r := &Result{
-			Path:     goDocUrl + htmlquery.InnerText(n),
-			Synopsis: htmlquery.InnerText(synopses[i]),
+			Path:     goDocUrl + htmlquery.InnerText(pathNode),
+			Synopsis: htmlquery.InnerText(synopsysNode),
 		}
 		ret = append(ret, r)
 	}
 
 	return ret, nil
+}
+
+// Search searches godoc.org with given query and returns found URLs
+func Search(query string) ([]*Result, error) {
+	res, err := request(query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	return parseHTML(res.Body)
 }
