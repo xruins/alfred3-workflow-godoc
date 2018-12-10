@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>mobi.ruins.alfred3-workflow-godoc</string>
+	<key>connections</key>
+	<dict>
+		<key>3755B4A5-5ADA-4AF3-8132-E1E90548A3D9</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>1ECEC7CE-5E5D-4F07-A284-F5976D</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Dean Jackson</string>
+	<key>description</key>
+	<string>Filter Safari Bookmarks</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>AwGo Demo: Bookmarks</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>godoc</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Loading bookmarks…</string>
+				<key>script</key>
+				<string>./alfred3-workflow-godoc "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Search repositories from godoc.org</string>
+				<key>title</key>
+				<string>GoDoc</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>70C8192A-DF1F-4BD1-A089-1A69ECD274B8</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{query}</string>
+				<key>utf8</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>C331B4B6-5960-4937-908C-823509B79F7D</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>AwGo: Search Safari bookmarks
+=============================
+
+This workflow demonstrates implementing fuzzy.Sortable on your own structs.
+
+See file bookmarks.go.</string>
+	<key>uidata</key>
+	<dict>
+		<key>79161A09-CD89-4FB7-976E-73BFF6AA31FA</key>
+		<dict>
+			<key>xpos</key>
+			<integer>290</integer>
+			<key>ypos</key>
+			<integer>60</integer>
+		</dict>
+		<key>8462B2A4-AEEC-463B-B774-A246EAFF1156</key>
+		<dict>
+			<key>note</key>
+			<string>Filter your Safari bookmarks</string>
+			<key>xpos</key>
+			<integer>70</integer>
+			<key>ypos</key>
+			<integer>60</integer>
+		</dict>
+	</dict>
+	<key>version</key>
+	<string>0.1</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
