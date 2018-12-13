@@ -11,7 +11,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-const goDocURL = "https://godoc.org/"
+const goDocURL = "https://godoc.org"
 
 // Result represent searching results of godoc.org
 type Result struct {
@@ -68,7 +68,7 @@ func parseSearchResult(r io.Reader) ([]*Result, error) {
 		// trim zero-width space
 		trimed := strings.Replace(htmlquery.InnerText(pathNode), "\u200b", "", -1)
 		res := &Result{
-			Path:     goDocURL + trimed,
+			Path:     goDocURL + "/" + trimed,
 			Synopsis: htmlquery.InnerText(synopsysNode),
 		}
 		//runtime.Breakpoint()
