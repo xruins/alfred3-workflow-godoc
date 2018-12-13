@@ -80,6 +80,15 @@ func parseSearchResult(r io.Reader) ([]*Result, error) {
 
 // Search searches godoc.org with given query and returns found URLs
 func Search(query string) ([]*Result, error) {
+	if query == "" {
+		return []*Result{
+			&Result{
+				Path:     goDocURL,
+				Synopsis: "Open godoc.org",
+			},
+		}, nil
+	}
+
 	res, err := requestWithoutRedirect(query)
 	if err != nil {
 		return nil, err
