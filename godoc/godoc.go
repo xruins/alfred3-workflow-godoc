@@ -5,11 +5,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/antchfx/xquery/html"
+	"golang.org/x/net/html"
 )
 
-const goDocUrl = "https://godoc.org"
+const goDocURL = "https://godoc.org/"
 
 // Result represent searching results of godoc.org
 type Result struct {
@@ -19,7 +21,7 @@ type Result struct {
 
 // request requests godoc.org with given query
 func request(query string) (*http.Response, error) {
-	url := fmt.Sprintf("%s?q=%s", goDocUrl, url.QueryEscape(query))
+	url := fmt.Sprintf("%s?q=%s", goDocURL, url.QueryEscape(query))
 	return http.Get(url)
 }
 
@@ -32,16 +34,27 @@ func parseHTML(r io.Reader) ([]*Result, error) {
 
 	var ret []*Result
 	// get synopsis
-	parentNodes := htmlquery.Find(doc, "/html/body/div/table/tbody/tr/td")
-
+	parentNodes := htmlquery.Find(doc, "/html/body/div/table/tbody/tr")
 	for _, p := range parentNodes {
-		pathNode := htmlquery.Find(p, "/td/a")[0]
-		synopsysNode := htmlquery.Find(p, "/td[@class='synopsis']")[0]
-		r := &Result{
-			Path:     goDocUrl + htmlquery.InnerText(pathNode),
+		pn := htmlquery.Find(p, "/td/a")
+		if len(pn) != 1 {
+			continue
+		}
+		pathNode := pn[0]
+
+		sn := htmlquery.Find(p, "/td[@class='synopsis']")
+		var synopsysNode *html.Node
+		if len(sn) == 1 {
+			synopsysNode = sn[0]
+		}
+		// trim zero-width space
+		trimed := strings.Replace(htmlquery.InnerText(pathNode), "\u200b", "", -1)
+		res := &Result{
+			Path:     goDocURL + trimed,
 			Synopsis: htmlquery.InnerText(synopsysNode),
 		}
-		ret = append(ret, r)
+		//runtime.Breakpoint()
+		ret = append(ret, res)
 	}
 
 	return ret, nil
