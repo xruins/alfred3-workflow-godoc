@@ -4,13 +4,15 @@
 <dict>
 	<key>bundleid</key>
 	<string>mobi.ruins.alfred3-workflow-godoc</string>
+	<key>category</key>
+	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
-		<key>3755B4A5-5ADA-4AF3-8132-E1E90548A3D9</key>
+		<key>70C8192A-DF1F-4BD1-A089-1A69ECD274B8</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>1ECEC7CE-5E5D-4F07-A284-F5976D</string>
+				<string>C331B4B6-5960-4937-908C-823509B79F7D</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -21,13 +23,13 @@
 		</array>
 	</dict>
 	<key>createdby</key>
-	<string>Dean Jackson</string>
+	<string>Hikaru Watanabe</string>
 	<key>description</key>
-	<string>Filter Safari Bookmarks</string>
+	<string>Search godoc.org</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>AwGo Demo: Bookmarks</string>
+	<string>GoDoc</string>
 	<key>objects</key>
 	<array>
 		<dict>
@@ -106,26 +108,20 @@ This workflow demonstrates implementing fuzzy.Sortable on your own structs.
 See file bookmarks.go.</string>
 	<key>uidata</key>
 	<dict>
-		<key>79161A09-CD89-4FB7-976E-73BFF6AA31FA</key>
+		<key>70C8192A-DF1F-4BD1-A089-1A69ECD274B8</key>
 		<dict>
 			<key>xpos</key>
-			<integer>290</integer>
-			<key>ypos</key>
-			<integer>60</integer>
+			<integer>300</integer>
 		</dict>
-		<key>8462B2A4-AEEC-463B-B774-A246EAFF1156</key>
+		<key>C331B4B6-5960-4937-908C-823509B79F7D</key>
 		<dict>
-			<key>note</key>
-			<string>Filter your Safari bookmarks</string>
 			<key>xpos</key>
-			<integer>70</integer>
-			<key>ypos</key>
-			<integer>60</integer>
+			<integer>500</integer>
 		</dict>
 	</dict>
 	<key>version</key>
 	<string>0.1</string>
 	<key>webaddress</key>
-	<string></string>
+	<string>https://github.com/xruins/alfred3-workflow-godoc</string>
 </dict>
 </plist>
