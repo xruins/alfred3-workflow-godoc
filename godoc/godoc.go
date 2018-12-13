@@ -19,6 +19,21 @@ type Result struct {
 	Synopsis string
 }
 
+type Results []*Result
+
+type SortaleResultSlice struct {
+	Results
+	SortBy SortBy
+}
+
+type SortBy int
+
+// enum for SortBy
+const (
+	Imports = iota // default value
+	Stars
+)
+
 // request requests godoc.org with given query, without following redirection
 func requestWithoutRedirect(query string) (*http.Response, error) {
 	url := fmt.Sprintf("%s?q=%s", goDocURL, url.QueryEscape(query))
@@ -79,12 +94,15 @@ func parseSearchResult(r io.Reader) ([]*Result, error) {
 }
 
 // Search searches godoc.org with given query and returns found URLs
-func Search(query string) ([]*Result, error) {
+func Search(query string, sortBy SortBy) (*SortaleResultSlice, error) {
+	// return godoc.org for blank query
 	if query == "" {
-		return []*Result{
-			&Result{
-				Path:     goDocURL,
-				Synopsis: "Open godoc.org",
+		return &SortaleResultSlice{
+			Results: Results{
+				&Result{
+					Path:     goDocURL,
+					Synopsis: "Open godoc.org",
+				},
 			},
 		}, nil
 	}
@@ -95,6 +113,7 @@ func Search(query string) ([]*Result, error) {
 	}
 	defer res.Body.Close()
 
+	var results []*Result
 	// godoc.org returns HTTP status code 302 for exact match such as "https://godoc.org/?q=net/http".
 	// then, parse godoc to get synopsis.
 	if res.StatusCode == http.StatusFound {
@@ -107,8 +126,16 @@ func Search(query string) ([]*Result, error) {
 			Path:     goDocURL + res.Header.Get("Location"),
 			Synopsis: synopsis,
 		}
-		return []*Result{result}, nil
+		results = []*Result{result}
 	} else {
-		return parseSearchResult(res.Body)
+		results, err = parseSearchResult(res.Body)
+		if err != nil {
+			return nil, err
+		}
 	}
+	s := &SortaleResultSlice{
+		Results: results,
+		SortBy:  sortBy,
+	}
+	return s, nil
 }

@@ -1,6 +1,10 @@
 package main
 
 import (
+	"log"
+	"os"
+	"path/filepath"
+
 	"github.com/deanishe/awgo"
 	"github.com/xruins/alfred3-workflow-godoc/godoc"
 )
@@ -9,16 +13,20 @@ var (
 	helpURL    = "https://github.com/xruins/alfred3-workflow-godoc"
 	maxResults = 200
 	wf         *aw.Workflow
-
-	// Icon for bookmark filetype
-	icon = &aw.Icon{
-		Value: "mobi.ruins.alfred3-workflow-godoc",
-		Type:  aw.IconTypeFileType,
-	}
+	icon       *aw.Icon
 )
 
 func init() {
 	wf = aw.New(aw.HelpURL(helpURL), aw.MaxResults(maxResults))
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	icon = &aw.Icon{
+		Value: dir + "icon.png",
+		Type:  aw.IconTypeFileType,
+	}
 }
 
 func run() {
