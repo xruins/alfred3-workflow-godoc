@@ -19,24 +19,42 @@ type Result struct {
 	Synopsis string
 }
 
-// request requests godoc.org with given query
-func request(query string) (*http.Response, error) {
+// request requests godoc.org with given query, without following redirection
+func requestWithoutRedirect(query string) (*http.Response, error) {
 	url := fmt.Sprintf("%s?q=%s", goDocURL, url.QueryEscape(query))
-	return http.Get(url)
+	client := http.DefaultClient
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	return client.Get(url)
+}
+
+// parseDoc parses given HTML, then returns its package description
+func parseDoc(r io.Reader) (string, error) {
+	doc, err := htmlquery.Parse(r)
+	if err != nil {
+		return "", err
+	}
+	// get package description as synopsys
+	n := htmlquery.Find(doc, "/html/body/div[1]/p[2]")
+	if len(n) == 1 {
+		return htmlquery.InnerText(n[0]), nil
+	}
+	return "", nil
 }
 
 // parseHTML parses given HTML, then returns a slice of *Result
-func parseHTML(r io.Reader) ([]*Result, error) {
+func parseSearchResult(r io.Reader) ([]*Result, error) {
 	doc, err := htmlquery.Parse(r)
 	if err != nil {
 		return nil, err
 	}
 
 	var ret []*Result
-	// get synopsis
 	parentNodes := htmlquery.Find(doc, "/html/body/div/table/tbody/tr")
 	for _, p := range parentNodes {
 		pn := htmlquery.Find(p, "/td/a")
+		// skip if tr tag does not include link
 		if len(pn) != 1 {
 			continue
 		}
@@ -62,12 +80,26 @@ func parseHTML(r io.Reader) ([]*Result, error) {
 
 // Search searches godoc.org with given query and returns found URLs
 func Search(query string) ([]*Result, error) {
-	res, err := request(query)
+	res, err := requestWithoutRedirect(query)
 	if err != nil {
 		return nil, err
 	}
-
 	defer res.Body.Close()
 
-	return parseHTML(res.Body)
+	// godoc.org returns HTTP status code 302 for exact match such as "https://godoc.org/?q=net/http".
+	// then, parse godoc to get synopsis.
+	if res.StatusCode == http.StatusFound {
+		synopsis, err := parseDoc(res.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		result := &Result{
+			Path:     goDocURL + res.Header.Get("Location"),
+			Synopsis: synopsis,
+		}
+		return []*Result{result}, nil
+	} else {
+		return parseSearchResult(res.Body)
+	}
 }
