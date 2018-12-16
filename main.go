@@ -37,7 +37,7 @@ func run() {
 
 		wf.NewItem(r.Path).
 			Subtitle(r.Synopsis).
-			Arg(r.Path).
+			Arg(r.Url.String()).
 			UID(r.Path).
 			Icon(icon).
 			Valid(true)

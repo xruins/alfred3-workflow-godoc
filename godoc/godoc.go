@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
+	"path"
 
 	"github.com/antchfx/xquery/html"
 	"golang.org/x/net/html"
@@ -13,23 +13,38 @@ import (
 
 const goDocURL = "https://godoc.org"
 
-// Result represent searching results of godoc.org
+// Result represents the searching results of godoc.org
 type Result struct {
 	Path     string
+	URL      *url.URL
 	Synopsis string
+}
+
+func makeResult(url *url.URL, synopsis string) *Result {
+	return &Result{
+		Path:     url.Path,
+		URL:      url,
+		Synopsis: synopsis,
+	}
 }
 
 // request requests godoc.org with given query, without following redirection
 func requestWithoutRedirect(query string) (*http.Response, error) {
-	url := fmt.Sprintf("%s?q=%s", goDocURL, url.QueryEscape(query))
+	u, err := url.Parse(goDocURL)
+	if err != nil {
+		return nil, err
+	}
+	q := fmt.Sprintf("?q=%s", url.QueryEscape(query))
+	u.RawQuery = q
 	client := http.DefaultClient
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
-	return client.Get(url)
+	return client.Get(u.String())
 }
 
 // parseDoc parses given HTML, then returns its package description
+// an argument should be document of godoc.org (e.g. https://godoc.org/net/)
 func parseDoc(r io.Reader) (string, error) {
 	doc, err := htmlquery.Parse(r)
 	if err != nil {
@@ -43,7 +58,8 @@ func parseDoc(r io.Reader) (string, error) {
 	return "", nil
 }
 
-// parseHTML parses given HTML, then returns a slice of *Result
+// parseSearchResult parses given HTML, then returns a slice of *Result
+// an argument should be search result of godoc.org (e.g. https://godoc.org/?q=foo)
 func parseSearchResult(r io.Reader) ([]*Result, error) {
 	doc, err := htmlquery.Parse(r)
 	if err != nil {
@@ -59,19 +75,20 @@ func parseSearchResult(r io.Reader) ([]*Result, error) {
 			continue
 		}
 		pathNode := pn[0]
+		relPath := htmlquery.SelectAttr(pathNode, "href")
 
 		sn := htmlquery.Find(p, "/td[@class='synopsis']")
 		var synopsysNode *html.Node
 		if len(sn) == 1 {
 			synopsysNode = sn[0]
 		}
-		// trim zero-width space
-		trimed := strings.Replace(htmlquery.InnerText(pathNode), "\u200b", "", -1)
-		res := &Result{
-			Path:     goDocURL + "/" + trimed,
-			Synopsis: htmlquery.InnerText(synopsysNode),
+		u, err := url.Parse(goDocURL)
+		if err != nil {
+			return nil, err
 		}
-		//runtime.Breakpoint()
+		u.Path = path.Join(u.Path, relPath)
+		synopsis := htmlquery.InnerText(synopsysNode)
+		res := makeResult(u, synopsis)
 		ret = append(ret, res)
 	}
 
@@ -86,20 +103,19 @@ func Search(query string) ([]*Result, error) {
 	}
 	defer res.Body.Close()
 
-	// godoc.org returns HTTP status code 302 for exact match such as "https://godoc.org/?q=net/http".
-	// then, parse godoc to get synopsis.
+	// if the query matches exact package name, parse document to get synopsis
 	if res.StatusCode == http.StatusFound {
+		u, err := url.Parse(goDocURL + res.Header.Get("Location"))
+		if err != nil {
+			return nil, err
+		}
 		synopsis, err := parseDoc(res.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		result := &Result{
-			Path:     goDocURL + res.Header.Get("Location"),
-			Synopsis: synopsis,
-		}
+		result := makeResult(u, synopsis)
 		return []*Result{result}, nil
-	} else {
-		return parseSearchResult(res.Body)
 	}
+	return parseSearchResult(res.Body)
 }
